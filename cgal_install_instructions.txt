@@ -1,0 +1,82 @@
+Instructions to install cgal and boost so that the file
+mesh_an_implicit_function.cpp can be compiled successfully
+-----------------------------------------------------------
+
+NOTE1: These are the approximate instructions. If they don't work at some point,
+please google around.
+
+NOTE2: Any links here might get broken over time.
+
+NOTE3: these instructions are for a linux system.
+
+NOTE4: Do not blindly run commands. understand them first, so that you will
+not make any mistake and you will have an eye out for any errors/unforeseen
+consequences.
+
+NOTE5: In a custom installation, the flags are explained in
+https://doc.cgal.org/Manual/3.4/doc_html/installation_manual/Chapter_installation_manual.html.
+i.e. if many of the dependencies of CGAL are not satisfied, then one has
+to install them one by one themselves. Then, the location of these installations
+has to be passed to the script/code that configures/compiles CGAL.
+
+For computers that lack cmake (instructions are from https://cmake.org/install/)
+wget https://github.com/Kitware/CMake/releases/download/v3.16.0/cmake-3.16.0.tar.gz
+untar this.
+go to this directory, and do ./bootstrap --prefix=(put this directory's full path here)
+make
+make install
+
+For computers that lack gmp, mpfr, zlib, vtk
+
+Download and install cgal version 4.9 (I used this version for the initial
+version of binoy image making. Later versions might be ok as well. Of course,
+make sure the target computer has all the correct software needed to compile
+this version of cgal). The following link may help:
+https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.9/CGAL-4.9.zip
+
+Download and install boost libraries.
+I think only the libraries 'thread' and 'system' are needed for cgal,
+so while installing only compile these libraries.
+Take a note of this directory. If your system already has boost
+installed, then a manual install may not be necessary, and all the
+BOOST related prefixes below need not be supplied I think.
+The following commands and link may be helpful:
+./bootstrap.sh --with-libraries=system,thread --prefix=/rigel/cheme/users/uni/boost
+./b2 install --prefix=/moto/cheme/users/uni/boost/boost_1_61_0
+https://www.boost.org/doc/libs/1_61_0/more/getting_started/unix-variants.html#header-only-libraries
+
+go to cgal directory and do the following:
+
+cmake . \
+	-DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc \
+	-DBOOST_ROOT=/rigel/cheme/users/uni/boost/boost_1_61_0 \
+	-DBoost_INCLUDE_DIR=/rigel/cheme/users/uni/boost/boost_1_61_0/include \
+	-DBoost_LIBRARY_DIRS=/rigel/cheme/users/uni/boost/boost_1_61_0/libs \
+	-DCMAKE_INSTALL_PREFIX=/rigel/cheme/users/uni/CGAL-4.9/st_build
+
+(Replace the boost directories above with the ones from your installation)
+
+edit CMakeCache.txt in this directory after this step and edit the CMAKE_INSTALL_PREFIX:PATH=
+to point to the path where the CGAL libraries will be installed (in this case the st_build directory)
+(there are a few other variables like this that need to be edited i.e. these are the directories
+where the libraries, documentation etc. will end up. By default, these are designed to point
+to system directories like /usr. But, on a shared computer like a cluster, these directories
+are all locked by the sysadmin. Thus, one has to retool this CMakeCache.txt file to ensure
+that all these pointers are to local directories controlled by the user)
+
+use the command:
+make CGAL CGAL_Core CGAL_ImageIO
+
+cd to examples/Surface_mesher/ and place the mesh_an_implicit_function file
+in this repository there.
+
+use the command:
+cmake . \
+	-DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc \
+	-DCGAL_DIR=/rigel/cheme/users/uni/CGAL-4.9/st_build
+	
+edit CMakeCache.txt after this and edit the CMAKE_INSTALL_PREFIX:PATH=
+to point to the path where libraries etc. were installed in the previous
+step (in this case the st_build directory).
+
+this should generate the executable file corresponding to the mesh_an_implicit_function.
